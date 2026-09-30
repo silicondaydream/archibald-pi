@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Archibald</title>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg" />
+    <link rel="stylesheet" href="/static/app.css" />
+    <script type="module" src="/static/app.js"></script>
+  </head>
+  <body>
+    <header class="bar">
+      <div class="brand">
+        <img src="/static/logo.svg" alt="" width="32" height="32" />
+        <div>
+          <div class="wordmark">Archibald</div>
+          <div class="tagline">Prompt-injection inspector</div>
+        </div>
+      </div>
+      <span class="pill" id="version">…</span>
+    </header>
+
+    <main class="layout">
+      <!-- ---------- input ---------- -->
+      <section class="card input-card" aria-label="What to scan">
+        <div class="tabs" role="tablist">
+          <button role="tab" id="tab-text" aria-selected="true" data-tab="text">Text</button>
+          <button role="tab" id="tab-url" aria-selected="false" data-tab="url">Web page</button>
+          <button role="tab" id="tab-file" aria-selected="false" data-tab="file">File</button>
+        </div>
+
+        <div class="pane" data-pane="text">
+          <label class="label" for="text-input">Paste text, an email, Markdown or HTML</label>
+          <textarea id="text-input" spellcheck="false"
+            placeholder="Paste anything a model might read — a web page's source, an email, a support ticket…"></textarea>
+          <div class="row">
+            <div class="segmented" role="radiogroup" aria-label="Read as">
+              <button role="radio" aria-checked="true" data-kind="auto">Auto</button>
+              <button role="radio" aria-checked="false" data-kind="text">Text</button>
+              <button role="radio" aria-checked="false" data-kind="html">HTML</button>
+            </div>
+            <button class="primary" id="scan-text">Scan text</button>
+          </div>
+        </div>
+
+        <div class="pane" data-pane="url" hidden>
+          <label class="label" for="url-input">Page address</label>
+          <input id="url-input" type="url" inputmode="url" placeholder="https://example.com/article" />
+          <p class="hint">Public pages only. Archibald downloads and parses the page; it never renders it
+            or runs its scripts, and it will not fetch private or internal addresses.</p>
+          <div class="row end"><button class="primary" id="scan-url">Scan page</button></div>
+        </div>
+
+        <div class="pane" data-pane="file" hidden>
+          <label class="drop" id="drop">
+            <input type="file" id="file-input"
+              accept=".html,.htm,.svg,.txt,.md,.pdf,.docx,.png,.jpg,.jpeg,.gif,.webp,.tif,.tiff" />
+            <span class="drop-title">Drop a file or click to choose</span>
+            <span class="drop-sub">HTML · SVG · PDF · DOCX · Markdown · text · PNG · JPEG · GIF · WebP · TIFF</span>
+            <span class="drop-file" id="file-name"></span>
+          </label>
+          <div class="row end"><button class="primary" id="scan-file" disabled>Scan file</button></div>
+        </div>
+
+        <div class="samples">
+          <div class="label">Or try a sample</div>
+          <div class="sample-list" id="samples"></div>
+        </div>
+      </section>
+
+      <!-- ---------- results ---------- -->
+      <section class="results" id="results" aria-live="polite">
+        <div class="card empty" id="empty">
+          <div class="empty-title">Nothing scanned yet</div>
+          <p>Paste some text, point Archibald at a page, or drop in a file. It looks for instructions
+            aimed at an AI — in visible text, hidden text, form fields, comments and metadata — and
+            shows you exactly where they are.</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

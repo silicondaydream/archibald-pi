@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "archibald"
+version = "0.1.0"
+description = "A prompt-injection detector for text, web pages, forms, documents and image metadata."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "pydantic>=2.7",
+  "pyyaml>=6.0",
+  "beautifulsoup4>=4.12",   # HTML/SVG, with the stdlib html.parser — no lxml build
+  "pillow>=10.4",           # image metadata only; pixels are never decoded
+  "pypdf>=4.3",
+  "defusedxml>=0.7",        # DOCX XML: no entity-expansion attacks
+  "httpx>=0.27",            # URL scanning, with an SSRF guard in fetch.py
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "python-multipart>=0.0.9", # file uploads
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+archibald = "archibald.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/archibald"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S"]
+ignore = ["S101"]  # asserts are how tests are written
+
+[tool.ruff.lint.per-file-ignores]
+# Extractors skip a malformed part of a file and carry on, on purpose: one bad
+# annotation must not stop the scan of the rest of the document.
+"src/archibald/extract/*" = ["S112"]
+# Demo fixtures are HTML and prose; wrapping them would change what they test.
+"src/archibald/samples.py" = ["E501"]
