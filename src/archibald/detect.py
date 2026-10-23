@@ -42,8 +42,8 @@ LEVELS: tuple[tuple[int, Level], ...] = ((70, "injection"), (40, "likely"), (12,
 MAX_SEGMENT_CHARS = 200_000
 MAX_MATCHES_PER_RULE = 5
 CONTEXT = 80
-_QUOTES_OPEN = "\"“«"
-_QUOTES_CLOSE = "\"”»"
+_QUOTES_OPEN = '"“«'
+_QUOTES_CLOSE = '"”»'
 
 
 def _evidence(text: str, start: int, end: int) -> str:

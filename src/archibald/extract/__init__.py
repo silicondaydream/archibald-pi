@@ -16,7 +16,12 @@ from archibald.models import Segment
 MAX_BYTES = 25_000_000
 
 _IMAGE_MAGIC = (
-    b"\x89PNG\r\n\x1a\n", b"\xff\xd8\xff", b"GIF87a", b"GIF89a", b"II*\x00", b"MM\x00*",
+    b"\x89PNG\r\n\x1a\n",
+    b"\xff\xd8\xff",
+    b"GIF87a",
+    b"GIF89a",
+    b"II*\x00",
+    b"MM\x00*",
 )
 
 
@@ -45,9 +50,7 @@ def _decode(data: bytes) -> str:
     return data.decode("utf-8-sig", errors="replace")
 
 
-def extract_bytes(
-    data: bytes, filename: str | None = None
-) -> tuple[list[Segment], list[str], str]:
+def extract_bytes(data: bytes, filename: str | None = None) -> tuple[list[Segment], list[str], str]:
     """(segments, notes, kind) for an uploaded or fetched file."""
     notes: list[str] = []
     if len(data) > MAX_BYTES:
