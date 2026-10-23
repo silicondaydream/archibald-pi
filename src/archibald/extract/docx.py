@@ -96,12 +96,16 @@ def extract_docx(data: bytes, name: str = "document.docx") -> tuple[list[Segment
                     continue
                 if label == "comments":
                     reason = reason or "Word comment"
-                segments.append(Segment(
-                    text=text, source=f"docx.{label}",
-                    location=f"{name} › {label} paragraph {p_index}",
-                    hidden=reason is not None, hidden_reason=reason,
-                    routine=label == "comments" and reason == "Word comment",
-                ))
+                segments.append(
+                    Segment(
+                        text=text,
+                        source=f"docx.{label}",
+                        location=f"{name} › {label} paragraph {p_index}",
+                        hidden=reason is not None,
+                        hidden_reason=reason,
+                        routine=label == "comments" and reason == "Word comment",
+                    )
+                )
 
     for part in ("docProps/core.xml", "docProps/app.xml", "docProps/custom.xml"):
         if part not in names:
@@ -113,9 +117,14 @@ def extract_docx(data: bytes, name: str = "document.docx") -> tuple[list[Segment
         for el in root.iter():
             if el.text and el.text.strip() and len(el.text.strip()) >= 3:
                 key = el.tag.split("}")[-1]
-                segments.append(Segment(
-                    text=el.text.strip(), source="docx.properties",
-                    location=f"{name} › property {key}", hidden=True,
-                    hidden_reason="document properties", routine=True,
-                ))
+                segments.append(
+                    Segment(
+                        text=el.text.strip(),
+                        source="docx.properties",
+                        location=f"{name} › property {key}",
+                        hidden=True,
+                        hidden_reason="document properties",
+                        routine=True,
+                    )
+                )
     return segments, notes

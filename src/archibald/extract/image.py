@@ -23,9 +23,20 @@ Image.MAX_IMAGE_PIXELS = 80_000_000
 
 _XML_TAG = re.compile(r"<[^>]+>")
 _INTERESTING_EXIF = {
-    "ImageDescription", "Artist", "Copyright", "Software", "Make", "Model",
-    "UserComment", "XPTitle", "XPComment", "XPAuthor", "XPKeywords", "XPSubject",
-    "DocumentName", "HostComputer",
+    "ImageDescription",
+    "Artist",
+    "Copyright",
+    "Software",
+    "Make",
+    "Model",
+    "UserComment",
+    "XPTitle",
+    "XPComment",
+    "XPAuthor",
+    "XPKeywords",
+    "XPSubject",
+    "DocumentName",
+    "HostComputer",
 }
 
 
@@ -65,16 +76,27 @@ def extract_image(data: bytes, name: str = "image") -> tuple[list[Segment], list
 
     def add(text: str | None, source: str, where: str, reason: str, routine: bool = True) -> None:
         if text and text.strip():
-            segments.append(Segment(text=text.strip(), source=source,
-                                    location=f"{name} › {where}", hidden=True,
-                                    hidden_reason=reason, routine=routine))
+            segments.append(
+                Segment(
+                    text=text.strip(),
+                    source=source,
+                    location=f"{name} › {where}",
+                    hidden=True,
+                    hidden_reason=reason,
+                    routine=routine,
+                )
+            )
 
     with warnings.catch_warnings():
         warnings.simplefilter("error", Image.DecompressionBombWarning)
         try:
             img = Image.open(io.BytesIO(data))
-        except (UnidentifiedImageError, Image.DecompressionBombError,
-                Image.DecompressionBombWarning, OSError) as exc:
+        except (
+            UnidentifiedImageError,
+            Image.DecompressionBombError,
+            Image.DecompressionBombWarning,
+            OSError,
+        ) as exc:
             return [], [f"Could not read image: {exc.__class__.__name__}"]
 
         fmt = img.format
@@ -90,32 +112,54 @@ def extract_image(data: bytes, name: str = "image") -> tuple[list[Segment], list
             for tag_id, value in ifd.items():
                 tag_name = ExifTags.TAGS.get(tag_id, str(tag_id))
                 if tag_name in _INTERESTING_EXIF:
-                    add(_decode(value, tag_name), "image.exif", f"EXIF {tag_name}",
-                        "image metadata")
+                    add(
+                        _decode(value, tag_name), "image.exif", f"EXIF {tag_name}", "image metadata"
+                    )
 
         for key, value in (img.info or {}).items():
-            if key in ("exif", "icc_profile", "dpi", "gamma", "transparency", "duration",
-                       "loop", "background", "version", "extension", "interlace", "aspect"):
+            if key in (
+                "exif",
+                "icc_profile",
+                "dpi",
+                "gamma",
+                "transparency",
+                "duration",
+                "loop",
+                "background",
+                "version",
+                "extension",
+                "interlace",
+                "aspect",
+            ):
                 continue
             if key in ("xmp", "XML:com.adobe.xmp"):
-                raw = value.decode("utf-8", errors="ignore") if isinstance(value, bytes) \
+                raw = (
+                    value.decode("utf-8", errors="ignore")
+                    if isinstance(value, bytes)
                     else str(value)
+                )
                 text = re.sub(r"\s+", " ", _XML_TAG.sub(" ", raw))
                 add(text, "image.xmp", "XMP metadata", "image metadata")
             elif key == "comment":
                 add(_decode(value, "comment"), "image.comment", "comment", "image metadata")
             elif isinstance(value, (str, bytes)):
                 # PNG tEXt / zTXt / iTXt chunks land here under their keyword.
-                add(_decode(value, key), "image.text-chunk", f"text chunk '{key}'",
-                    "image metadata")
+                add(
+                    _decode(value, key), "image.text-chunk", f"text chunk '{key}'", "image metadata"
+                )
 
     tail = _trailing(data, fmt)
     if len(tail) >= 8:
         text = tail[:100_000].decode("utf-8", errors="ignore")
         printable = sum(ch.isprintable() or ch in "\n\t" for ch in text)
         if text and printable / len(text) > 0.85:
-            add(text, "image.trailing-data", f"{len(tail)} bytes after end of image",
-                "data appended after the image ends", routine=False)
+            add(
+                text,
+                "image.trailing-data",
+                f"{len(tail)} bytes after end of image",
+                "data appended after the image ends",
+                routine=False,
+            )
         else:
             notes.append(f"{len(tail)} non-text bytes appended after the end of the image")
     return segments, notes

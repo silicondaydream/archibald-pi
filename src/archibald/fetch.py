@@ -62,8 +62,9 @@ def check_url(url: str) -> None:
 def fetch(url: str) -> tuple[bytes, str, str]:
     """(body, content-type, final URL)."""
     headers = {"User-Agent": USER_AGENT, "Accept": "text/html,application/xhtml+xml,*/*;q=0.8"}
-    with httpx.Client(follow_redirects=False, timeout=TIMEOUT, trust_env=False,
-                      headers=headers) as client:
+    with httpx.Client(
+        follow_redirects=False, timeout=TIMEOUT, trust_env=False, headers=headers
+    ) as client:
         for _ in range(MAX_REDIRECTS + 1):
             check_url(url)
             try:

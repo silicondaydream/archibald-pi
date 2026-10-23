@@ -46,28 +46,76 @@ MAX_DEPTH = 2
 WHITE = (255, 255, 255)
 
 BLOCKS = {
-    "p", "div", "li", "td", "th", "h1", "h2", "h3", "h4", "h5", "h6", "section",
-    "article", "main", "header", "footer", "nav", "aside", "blockquote", "pre",
-    "figcaption", "dd", "dt", "label", "button", "form", "table", "tr", "ul", "ol",
-    "body", "html", "textarea", "option", "summary", "details", "fieldset", "legend",
-    "caption", "address", "svg", "text", "foreignobject",
+    "p",
+    "div",
+    "li",
+    "td",
+    "th",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "section",
+    "article",
+    "main",
+    "header",
+    "footer",
+    "nav",
+    "aside",
+    "blockquote",
+    "pre",
+    "figcaption",
+    "dd",
+    "dt",
+    "label",
+    "button",
+    "form",
+    "table",
+    "tr",
+    "ul",
+    "ol",
+    "body",
+    "html",
+    "textarea",
+    "option",
+    "summary",
+    "details",
+    "fieldset",
+    "legend",
+    "caption",
+    "address",
+    "svg",
+    "text",
+    "foreignobject",
 }
 # Attributes a model reads and a person usually does not.
-ATTRS = ("alt", "title", "aria-label", "aria-description", "aria-roledescription",
-         "aria-placeholder", "placeholder", "label", "summary")
+ATTRS = (
+    "alt",
+    "title",
+    "aria-label",
+    "aria-description",
+    "aria-roledescription",
+    "aria-placeholder",
+    "placeholder",
+    "label",
+    "summary",
+)
 SVG_NONRENDERED = {"desc", "title", "metadata"}
 
 
 @dataclass
 class _State:
-    hidden: str | None     # reason, inherited
+    hidden: str | None  # reason, inherited
     color: tuple[int, int, int] | None
     background: tuple[int, int, int]
-    in_form: str | None    # description of the enclosing form
+    in_form: str | None  # description of the enclosing form
 
 
 def describe(tag: Tag) -> str:
     """A short, stable label: tag#id.class, with up to two ancestors."""
+
     def one(t: Tag) -> str:
         label = t.name
         if t.get("id"):
@@ -107,13 +155,25 @@ class _Extractor:
     def _loc(self, text: str) -> str:
         return f"{self.prefix} › {text}" if self.prefix else text
 
-    def _add(self, text: str, source: str, location: str, hidden: str | None = None,
-             routine: bool = False) -> None:
+    def _add(
+        self,
+        text: str,
+        source: str,
+        location: str,
+        hidden: str | None = None,
+        routine: bool = False,
+    ) -> None:
         text = text.strip()
         if text:
             self.segments.append(
-                Segment(text=text, source=source, location=self._loc(location),
-                        hidden=hidden is not None, hidden_reason=hidden, routine=routine)
+                Segment(
+                    text=text,
+                    source=source,
+                    location=self._loc(location),
+                    hidden=hidden is not None,
+                    hidden_reason=hidden,
+                    routine=routine,
+                )
             )
 
     def _load_stylesheets(self) -> None:
@@ -183,9 +243,15 @@ class _Extractor:
     def _walk(self, node: Tag | BeautifulSoup, state: _State, block: Tag | None) -> None:
         for child in node.children:
             if isinstance(child, Comment):
-                self._add(str(child), "html.comment", f"comment in {describe(node)}"
-                          if isinstance(node, Tag) and node.name != "[document]" else "comment",
-                          hidden="HTML comment", routine=True)
+                self._add(
+                    str(child),
+                    "html.comment",
+                    f"comment in {describe(node)}"
+                    if isinstance(node, Tag) and node.name != "[document]"
+                    else "comment",
+                    hidden="HTML comment",
+                    routine=True,
+                )
             elif isinstance(child, (Doctype, Declaration, ProcessingInstruction)):
                 continue
             elif isinstance(child, (NavigableString, CData)):
@@ -218,8 +284,13 @@ class _Extractor:
         if name == "noscript" and child_state.hidden is None:
             child_state.hidden = "<noscript> (only shown with JavaScript disabled)"
         if name in SVG_NONRENDERED and tag.find_parent("svg") is not None:
-            self._add(tag.get_text(" "), "svg.text", describe(tag),
-                      hidden=f"SVG <{name}> (not rendered)", routine=True)
+            self._add(
+                tag.get_text(" "),
+                "svg.text",
+                describe(tag),
+                hidden=f"SVG <{name}> (not rendered)",
+                routine=True,
+            )
             return
 
         self._attributes(tag, child_state)
@@ -244,7 +315,9 @@ class _Extractor:
                 # A placeholder is on screen; alt text and aria labels are not.
                 visible_attr = attr in ("placeholder", "label") and state.hidden is None
                 self._add(
-                    str(value), f"{source_prefix}.{attr}", f"{where} @{attr}",
+                    str(value),
+                    f"{source_prefix}.{attr}",
+                    f"{where} @{attr}",
                     hidden=state.hidden if visible_attr else (state.hidden or f"{attr} attribute"),
                     routine=not visible_attr and state.hidden is None,
                 )
@@ -252,13 +325,27 @@ class _Extractor:
             input_type = str(tag.get("type", "text")).lower()
             shown = input_type in ("text", "search", "email", "url", "submit", "button", "tel")
             reason = state.hidden if shown else (state.hidden or f"input type={input_type} value")
-            self._add(str(tag["value"]), f"{source_prefix}.value", f"{where} @value",
-                      hidden=reason, routine=input_type not in ("hidden",) and not shown)
+            self._add(
+                str(tag["value"]),
+                f"{source_prefix}.value",
+                f"{where} @value",
+                hidden=reason,
+                routine=input_type not in ("hidden",) and not shown,
+            )
         for attr, value in tag.attrs.items():
-            if attr.startswith("data-") and isinstance(value, str) and len(value) >= 20 \
-                    and " " in value:
-                self._add(value, f"{source_prefix}.data-attribute", f"{where} @{attr}",
-                          hidden=state.hidden or "data attribute", routine=state.hidden is None)
+            if (
+                attr.startswith("data-")
+                and isinstance(value, str)
+                and len(value) >= 20
+                and " " in value
+            ):
+                self._add(
+                    value,
+                    f"{source_prefix}.data-attribute",
+                    f"{where} @{attr}",
+                    hidden=state.hidden or "data attribute",
+                    routine=state.hidden is None,
+                )
 
     def _embedded(self, tag: Tag) -> None:
         if self.depth >= MAX_DEPTH:
@@ -276,16 +363,18 @@ class _Extractor:
         if not (mime.startswith("text/") or mime in ("image/svg+xml", "application/xhtml+xml")):
             return
         try:
-            raw = base64.b64decode(payload, validate=False) if ";base64" in header \
+            raw = (
+                base64.b64decode(payload, validate=False)
+                if ";base64" in header
                 else unquote(payload).encode()
+            )
             body = raw[:200_000].decode("utf-8", errors="replace")
         except (binascii.Error, ValueError):
             return
         if mime in ("text/html", "image/svg+xml", "application/xhtml+xml"):
             self._nested(body, f"data: URI in {where}", mime)
         else:
-            self._add(body, "html.data-uri", f"data: URI in {where}",
-                      hidden="embedded data: URI")
+            self._add(body, "html.data-uri", f"data: URI in {where}", hidden="embedded data: URI")
 
     def _nested(self, html: str, where: str, mime: str) -> None:
         inner, notes = extract_html(html, prefix=self._loc(where), depth=self.depth + 1)
@@ -301,17 +390,31 @@ class _Extractor:
             try:
                 data = json.loads(text)
             except ValueError:
-                self._add(text, "page.metadata", "JSON-LD (unparseable)",
-                          hidden="structured data", routine=True)
+                self._add(
+                    text,
+                    "page.metadata",
+                    "JSON-LD (unparseable)",
+                    hidden="structured data",
+                    routine=True,
+                )
                 return
             for path, value in _flatten(data):
                 if len(value) >= 12:
-                    self._add(value, "page.metadata", f"JSON-LD {path}",
-                              hidden="structured data", routine=True)
+                    self._add(
+                        value,
+                        "page.metadata",
+                        f"JSON-LD {path}",
+                        hidden="structured data",
+                        routine=True,
+                    )
         elif kind and "javascript" not in kind and "module" not in kind:
             # text/plain, text/template, application/json… — data a model may read.
-            self._add(text, "html.script-data", f"<script type={kind}>",
-                      hidden="non-executable <script> block")
+            self._add(
+                text,
+                "html.script-data",
+                f"<script type={kind}>",
+                hidden="non-executable <script> block",
+            )
         # JavaScript itself is not scanned: code is not prose, and the rules would
         # mostly find variable names.
 
@@ -319,25 +422,39 @@ class _Extractor:
         head = self.soup.head
         title = self.soup.title
         if title and title.string:
-            self._add(title.string, "page.metadata", "<title>", hidden="page title",
-                      routine=True)
+            self._add(title.string, "page.metadata", "<title>", hidden="page title", routine=True)
         for meta in self.soup.find_all("meta"):
             content = meta.get("content")
-            key = meta.get("name") or meta.get("property") or meta.get("http-equiv") \
+            key = (
+                meta.get("name")
+                or meta.get("property")
+                or meta.get("http-equiv")
                 or meta.get("itemprop")
+            )
             if content and key:
-                self._add(str(content), "page.metadata", f"<meta {key}>",
-                          hidden="page metadata", routine=True)
+                self._add(
+                    str(content),
+                    "page.metadata",
+                    f"<meta {key}>",
+                    hidden="page metadata",
+                    routine=True,
+                )
         for link in self.soup.find_all("link", title=True):
-            self._add(str(link["title"]), "page.metadata", "<link title>",
-                      hidden="page metadata", routine=True)
+            self._add(
+                str(link["title"]),
+                "page.metadata",
+                "<link title>",
+                hidden="page metadata",
+                routine=True,
+            )
         if head is not None:
             # Scripts in <head> are not reached by the body walk.
             for script in head.find_all("script"):
                 self._script(script)
             for c in head.find_all(string=lambda s: isinstance(s, Comment)):
-                self._add(str(c), "html.comment", "comment in <head>",
-                          hidden="HTML comment", routine=True)
+                self._add(
+                    str(c), "html.comment", "comment in <head>", hidden="HTML comment", routine=True
+                )
 
     def _flush_runs(self) -> None:
         """Merge consecutive text runs that share a block, visibility and form."""
@@ -350,7 +467,7 @@ class _Extractor:
                 return
             reason, form = key[1], key[2]
             text = re.sub(r"\s+", " ", "".join(buffer))
-            source = ("form.text" if form else "html.hidden" if reason else "html.visible")
+            source = "form.text" if form else "html.hidden" if reason else "html.visible"
             where = describe(block_tag)
             if form and not where.startswith("form"):
                 where = f"{form} › {where}"

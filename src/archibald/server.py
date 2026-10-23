@@ -27,8 +27,9 @@ CSP = (
     "form-action 'none'"
 )
 
-app = FastAPI(title="Archibald", version=__version__, docs_url=None, redoc_url=None,
-              openapi_url=None)
+app = FastAPI(
+    title="Archibald", version=__version__, docs_url=None, redoc_url=None, openapi_url=None
+)
 
 
 @app.middleware("http")
@@ -87,8 +88,10 @@ def scan_file_endpoint(file: UploadFile = File(...)) -> Verdict:  # noqa: B008 â
 
 @app.get("/api/samples")
 def samples() -> list[dict[str, str]]:
-    return [{"id": s.id, "title": s.title, "description": s.description,
-             "filename": s.filename} for s in SAMPLES]
+    return [
+        {"id": s.id, "title": s.title, "description": s.description, "filename": s.filename}
+        for s in SAMPLES
+    ]
 
 
 @app.post("/api/scan/sample/{sample_id}", response_model=Verdict)

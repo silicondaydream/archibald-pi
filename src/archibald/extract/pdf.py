@@ -72,19 +72,28 @@ def extract_pdf(data: bytes, name: str = "document.pdf") -> tuple[list[Segment],
     except (PdfReadError, ValueError, OSError) as exc:
         return [], [f"Could not read PDF: {exc.__class__.__name__}"]
 
-    def add(text: str, source: str, where: str, reason: str | None = None,
-            routine: bool = False) -> None:
+    def add(
+        text: str, source: str, where: str, reason: str | None = None, routine: bool = False
+    ) -> None:
         if text and text.strip():
-            segments.append(Segment(text=text.strip(), source=source,
-                                    location=f"{name} › {where}", hidden=reason is not None,
-                                    hidden_reason=reason, routine=routine))
+            segments.append(
+                Segment(
+                    text=text.strip(),
+                    source=source,
+                    location=f"{name} › {where}",
+                    hidden=reason is not None,
+                    hidden_reason=reason,
+                    routine=routine,
+                )
+            )
 
     meta = reader.metadata or {}
     for key in ("/Title", "/Author", "/Subject", "/Keywords", "/Creator", "/Producer"):
         value = meta.get(key)
         if value:
-            add(str(value), "pdf.metadata", f"metadata {key[1:]}", "document metadata",
-                routine=True)
+            add(
+                str(value), "pdf.metadata", f"metadata {key[1:]}", "document metadata", routine=True
+            )
 
     pages = reader.pages
     if len(pages) > MAX_PAGES:
@@ -92,8 +101,9 @@ def extract_pdf(data: bytes, name: str = "document.pdf") -> tuple[list[Segment],
     for number, page in enumerate(pages[:MAX_PAGES], start=1):
         tracker = _HiddenTextTracker()
         try:
-            visible = page.extract_text(visitor_operand_before=tracker.operator,
-                                        visitor_text=tracker.text)
+            visible = page.extract_text(
+                visitor_operand_before=tracker.operator, visitor_text=tracker.text
+            )
         except Exception as exc:  # noqa: BLE001 — malformed pages must not stop the scan
             notes.append(f"Page {number}: text could not be extracted ({exc.__class__.__name__})")
             continue
@@ -112,8 +122,13 @@ def extract_pdf(data: bytes, name: str = "document.pdf") -> tuple[list[Segment],
                 continue
             for key in ("/Contents", "/TU", "/T"):
                 if obj.get(key):
-                    add(str(obj[key]), "pdf.annotation", f"page {number} annotation {key[1:]}",
-                        "annotation", routine=True)
+                    add(
+                        str(obj[key]),
+                        "pdf.annotation",
+                        f"page {number} annotation {key[1:]}",
+                        "annotation",
+                        routine=True,
+                    )
 
     try:
         fields = reader.get_fields() or {}
@@ -123,8 +138,13 @@ def extract_pdf(data: bytes, name: str = "document.pdf") -> tuple[list[Segment],
         for key in ("/V", "/TU"):
             value = field.get(key)
             if value and isinstance(value, str):
-                add(value, "pdf.form", f"form field '{field_name}' {key[1:]}",
-                    "form field value" if key == "/V" else "form field tooltip", routine=True)
+                add(
+                    value,
+                    "pdf.form",
+                    f"form field '{field_name}' {key[1:]}",
+                    "form field value" if key == "/V" else "form field tooltip",
+                    routine=True,
+                )
     if fields:
         notes.append(f"{len(fields)} PDF form field{'s' if len(fields) != 1 else ''} scanned")
     return segments, notes

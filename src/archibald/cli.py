@@ -91,11 +91,19 @@ def main(argv: list[str] | None = None) -> int:
 
     scan = sub.add_parser("scan", help="scan a file, a URL, or stdin (-)")
     scan.add_argument("target")
-    scan.add_argument("--kind", choices=["auto", "text", "html"], default="auto",
-                      help="force how text input is read (files are sniffed by content)")
+    scan.add_argument(
+        "--kind",
+        choices=["auto", "text", "html"],
+        default="auto",
+        help="force how text input is read (files are sniffed by content)",
+    )
     scan.add_argument("--json", action="store_true", help="print the full JSON verdict")
-    scan.add_argument("--fail-at", choices=list(LEVEL_RANK), default="likely",
-                      help="exit 1 at or above this level (default: likely)")
+    scan.add_argument(
+        "--fail-at",
+        choices=list(LEVEL_RANK),
+        default="likely",
+        help="exit 1 at or above this level (default: likely)",
+    )
     scan.set_defaults(func=_scan)
 
     ev = sub.add_parser("eval", help="precision/recall against the labelled corpus")
