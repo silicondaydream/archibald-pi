@@ -1,7 +1,25 @@
-"""The web UI's backend. Loopback by default — see cli.py for why."""
+"""The web UI's backend. Loopback only, enforced here and not just in cli.py.
+
+`archibald serve` refuses a non-loopback bind, but nothing stops someone running
+`uvicorn archibald.server:app --host 0.0.0.0` directly. So the app checks every
+request itself:
+
+* the peer must be a loopback address, and
+* the Host header must name loopback (`127.0.0.1`, `localhost`, `[::1]`).
+
+The second check is not redundant. A web page open in the operator's own browser
+can point a name it controls at 127.0.0.1 (DNS rebinding) and then talk to this
+server from a loopback peer — but its requests carry its own name as the Host,
+and are refused.
+
+`archibald serve --allow-remote` sets ARCHIBALD_ALLOW_REMOTE=1, which lifts both,
+for an operator who has put it behind something that authenticates.
+"""
 
 from __future__ import annotations
 
+import ipaddress
+import os
 from pathlib import Path
 from typing import Literal
 
@@ -27,6 +45,27 @@ CSP = (
     "form-action 'none'"
 )
 
+ALLOW_REMOTE_ENV = "ARCHIBALD_ALLOW_REMOTE"
+LOOPBACK_NAMES = frozenset({"localhost", "127.0.0.1", "::1"})
+
+
+def _is_loopback_peer(host: str | None) -> bool:
+    if host is None:
+        return False
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
+
+
+def _host_name(header: str) -> str:
+    """The name in a Host header, without its port: `[::1]:8741` → `::1`."""
+    header = header.strip().lower()
+    if header.startswith("["):
+        return header[1 : header.find("]")] if "]" in header else header
+    return header.rsplit(":", 1)[0] if header.count(":") == 1 else header
+
+
 app = FastAPI(
     title="Archibald", version=__version__, docs_url=None, redoc_url=None, openapi_url=None
 )
@@ -34,6 +73,15 @@ app = FastAPI(
 
 @app.middleware("http")
 async def security_headers(request: Request, call_next):  # type: ignore[no-untyped-def]
+    if os.environ.get(ALLOW_REMOTE_ENV) != "1":
+        peer = request.client.host if request.client else None
+        host = _host_name(request.headers.get("host", ""))
+        if not _is_loopback_peer(peer) or host not in LOOPBACK_NAMES:
+            return JSONResponse(
+                {"detail": "Archibald only answers on loopback; see archibald serve --help"},
+                status_code=403,
+                headers={"Content-Security-Policy": CSP, "Cache-Control": "no-store"},
+            )
     response = await call_next(request)
     response.headers["Content-Security-Policy"] = CSP
     response.headers["X-Content-Type-Options"] = "nosniff"
