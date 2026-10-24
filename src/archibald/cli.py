@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import ipaddress
+import os
 import sys
 from pathlib import Path
 
@@ -79,6 +80,10 @@ def _serve(args: argparse.Namespace) -> int:
         )
         if not args.allow_remote:
             return 2
+    if args.allow_remote:
+        # Read by the app's own guard (server.py), which otherwise refuses any
+        # peer or Host header that is not loopback.
+        os.environ["ARCHIBALD_ALLOW_REMOTE"] = "1"
     print(f"Archibald {__version__} — http://{host}:{args.port}")
     uvicorn.run("archibald.server:app", host=host, port=args.port, log_level="warning")
     return 0
