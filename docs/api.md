@@ -24,8 +24,8 @@ and docs routes are disabled.
 |---|---|---|---|
 | GET | `/api/health` | | `{"status": "ok", "version": …}` |
 | POST | `/api/scan/text` | `{"text": "…", "kind": "auto"\|"text"\|"html"}` | a Verdict. `400` if the text is blank; text is capped at 2,000,000 characters |
-| POST | `/api/scan/url` | `{"url": "…"}` | a Verdict. `400` with the reason if the fetcher refuses the URL (see [threat-model.md](threat-model.md#why-the-url-fetcher-is-pinned)) |
-| POST | `/api/scan/file` | multipart `file` | a Verdict. `413` over 25 MB, `400` if empty. Type is sniffed from content, not the name |
+| POST | `/api/scan/url` | `{"url": "…"}` | a Verdict. `400` with the reason if the fetcher refuses the URL (see [threat-model.md](threat-model.md#why-the-url-fetcher-is-pinned)); `415` if the page is a format that is not scanned |
+| POST | `/api/scan/file` | multipart `file` | a Verdict. `413` over 25 MB, `400` if empty, `415` if it cannot be scanned (a zip other than DOCX, a corrupt or oversized DOCX). Type is sniffed from content, not the name |
 | GET | `/api/samples` | | the built-in demo inputs |
 | POST | `/api/scan/sample/{id}` | | a Verdict for one sample; `404` if unknown |
 

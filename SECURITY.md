@@ -34,6 +34,7 @@ it reads. Every control below falls out of that.
 | XML entity expansion | DOCX XML is parsed with `defusedxml` | |
 | Executing or rendering hostile content | HTML is parsed, never rendered; scripts never run; the UI writes every value with `textContent` under a CSP with no inline script and no third-party origin | |
 | Hiding text from the scanner | Hidden-content extraction (CSS, attributes, metadata, comments), decoding of tag-smuggling, zero-width, bidi, homoglyph, base64 and URL encodings, and structural detection of data appended after an image | `tests/test_detect.py`, `tests/test_image_trailing.py` |
+| A file that cannot be scanned passing a gate as clean | Input refused whole — over 25 MB, a zip other than DOCX, a corrupt or oversized DOCX — is an error, never an empty verdict: `scan` exits 2 and the API answers `415` | `tests/test_cli.py`, `tests/test_server.py` |
 | A crafted file crashing the scan | Extractors skip a malformed part and carry on; Pillow's own guard exceptions become notes | `tests/test_image_trailing.py` |
 
 ## Out of scope
