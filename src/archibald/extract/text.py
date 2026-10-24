@@ -19,19 +19,45 @@ _IMG_ALT = re.compile(r"!\[([^\]]{3,})\]\(([^)\s]+)(?:\s+\"([^\"]*)\")?\)")
 def extract_text(text: str, name: str = "input") -> tuple[list[Segment], list[str]]:
     segments = [Segment(text=text, source="text", location=name)]
     for m in _HTML_COMMENT.finditer(text):
-        segments.append(Segment(text=m.group(1), source="markdown.comment",
-                                location=f"{name} › HTML comment", hidden=True,
-                                hidden_reason="comment (not rendered)"))
+        segments.append(
+            Segment(
+                text=m.group(1),
+                source="markdown.comment",
+                location=f"{name} › HTML comment",
+                hidden=True,
+                hidden_reason="comment (not rendered)",
+            )
+        )
     for m in _REF_COMMENT.finditer(text):
-        segments.append(Segment(text=m.group(1), source="markdown.comment",
-                                location=f"{name} › link-reference comment", hidden=True,
-                                hidden_reason="Markdown link-reference comment (not rendered)"))
+        segments.append(
+            Segment(
+                text=m.group(1),
+                source="markdown.comment",
+                location=f"{name} › link-reference comment",
+                hidden=True,
+                hidden_reason="Markdown link-reference comment (not rendered)",
+            )
+        )
     for m in _IMG_ALT.finditer(text):
-        segments.append(Segment(text=m.group(1), source="markdown.alt",
-                                location=f"{name} › image alt text", hidden=True,
-                                hidden_reason="image alt text", routine=True))
+        segments.append(
+            Segment(
+                text=m.group(1),
+                source="markdown.alt",
+                location=f"{name} › image alt text",
+                hidden=True,
+                hidden_reason="image alt text",
+                routine=True,
+            )
+        )
         if m.group(3):
-            segments.append(Segment(text=m.group(3), source="markdown.title",
-                                    location=f"{name} › image title", hidden=True,
-                                    hidden_reason="image title", routine=True))
+            segments.append(
+                Segment(
+                    text=m.group(3),
+                    source="markdown.title",
+                    location=f"{name} › image title",
+                    hidden=True,
+                    hidden_reason="image title",
+                    routine=True,
+                )
+            )
     return segments, []

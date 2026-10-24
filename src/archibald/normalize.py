@@ -33,13 +33,54 @@ _TAG_RE = re.compile("[\U000e0000-\U000e007f]+")
 # point is to catch "іgnore" with a Cyrillic і, not to be a font.
 _CONFUSABLES = str.maketrans(
     {
-        "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "у": "y", "х": "x", "і": "i",
-        "ј": "j", "ѕ": "s", "һ": "h", "ԁ": "d", "ɡ": "g", "ⅼ": "l", "ո": "n",
-        "А": "A", "В": "B", "Е": "E", "К": "K", "М": "M", "Н": "H", "О": "O", "Р": "P",
-        "С": "C", "Т": "T", "Х": "X", "І": "I",
-        "α": "a", "ο": "o", "ρ": "p", "ν": "v", "ι": "i", "κ": "k", "τ": "t", "υ": "u",
-        "Α": "A", "Β": "B", "Ε": "E", "Ι": "I", "Κ": "K", "Μ": "M", "Ν": "N", "Ο": "O",
-        "Ρ": "P", "Τ": "T", "Χ": "X", "Υ": "Y", "Ζ": "Z",
+        "а": "a",
+        "е": "e",
+        "о": "o",
+        "р": "p",
+        "с": "c",
+        "у": "y",
+        "х": "x",
+        "і": "i",
+        "ј": "j",
+        "ѕ": "s",
+        "һ": "h",
+        "ԁ": "d",
+        "ɡ": "g",
+        "ⅼ": "l",
+        "ո": "n",
+        "А": "A",
+        "В": "B",
+        "Е": "E",
+        "К": "K",
+        "М": "M",
+        "Н": "H",
+        "О": "O",
+        "Р": "P",
+        "С": "C",
+        "Т": "T",
+        "Х": "X",
+        "І": "I",
+        "α": "a",
+        "ο": "o",
+        "ρ": "p",
+        "ν": "v",
+        "ι": "i",
+        "κ": "k",
+        "τ": "t",
+        "υ": "u",
+        "Α": "A",
+        "Β": "B",
+        "Ε": "E",
+        "Ι": "I",
+        "Κ": "K",
+        "Μ": "M",
+        "Ν": "N",
+        "Ο": "O",
+        "Ρ": "P",
+        "Τ": "T",
+        "Χ": "X",
+        "Υ": "Y",
+        "Ζ": "Z",
     }
 )
 _MIXED_WORD_RE = re.compile(r"\b\w*[A-Za-z]\w*\b")
@@ -97,7 +138,8 @@ def variants(text: str) -> tuple[list[Variant], list[Trick]]:
         out.append(Variant(decode_tags(text), "Unicode tag characters (ASCII smuggling)"))
         tricks.append(
             Trick(
-                "obfuscation.unicode_tags", "high",
+                "obfuscation.unicode_tags",
+                "high",
                 "Invisible Unicode tag characters carry hidden ASCII text",
                 smuggled[:200],
             )
@@ -110,7 +152,8 @@ def variants(text: str) -> tuple[list[Variant], list[Trick]]:
         if inside_words >= 2 or len(zw) >= 5:
             tricks.append(
                 Trick(
-                    "obfuscation.zero_width", "medium",
+                    "obfuscation.zero_width",
+                    "medium",
                     f"{len(zw)} zero-width characters, {inside_words} splitting words",
                     _ZW_RE.sub("␣", text)[:200],
                 )
@@ -119,7 +162,8 @@ def variants(text: str) -> tuple[list[Variant], list[Trick]]:
     if _BIDI_RE.search(text):
         tricks.append(
             Trick(
-                "obfuscation.bidi_controls", "medium",
+                "obfuscation.bidi_controls",
+                "medium",
                 "Bidirectional control characters can make text display in a different order "
                 "than it is read",
                 _BIDI_RE.sub("␣", text)[:200],
@@ -127,13 +171,15 @@ def variants(text: str) -> tuple[list[Variant], list[Trick]]:
         )
 
     mixed = [
-        w for w in _MIXED_WORD_RE.findall(text)
+        w
+        for w in _MIXED_WORD_RE.findall(text)
         if _NON_LATIN_LETTER_RE.search(w) and re.search(r"[A-Za-z]", w)
     ]
     if mixed:
         tricks.append(
             Trick(
-                "obfuscation.mixed_script", "medium",
+                "obfuscation.mixed_script",
+                "medium",
                 "Words mix Latin with look-alike Cyrillic/Greek letters",
                 ", ".join(mixed[:8]),
             )
@@ -141,8 +187,11 @@ def variants(text: str) -> tuple[list[Variant], list[Trick]]:
 
     folded = fold(decode_tags(text))
     if folded != text:
-        out.append(Variant(folded, "normalised (NFKC, invisible characters removed, "
-                                    "look-alike letters folded)"))
+        out.append(
+            Variant(
+                folded, "normalised (NFKC, invisible characters removed, look-alike letters folded)"
+            )
+        )
 
     for blob in _B64_RE.findall(text):
         try:

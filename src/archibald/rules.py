@@ -51,26 +51,34 @@ _TARGETS = (
 RULES: tuple[Rule, ...] = (
     # --- override ---------------------------------------------------------
     _r(
-        "override.ignore_previous", "override", "high",
+        "override.ignore_previous",
+        "override",
+        "high",
         "Tells the model to discard its existing instructions",
         r"\b(ignore|disregard|forget|override|bypass|skip|abandon|drop)\b[^.\n]{0,40}?"
         r"\b(previous|prior|above|earlier|preceding|all|any|your|the|original|initial|"
         r"existing|those|these)\b[^.\n]{0,25}?\b" + _TARGETS,
     ),
     _r(
-        "override.new_instructions", "override", "medium",
+        "override.new_instructions",
+        "override",
+        "medium",
         "Announces replacement instructions",
         r"\b(new|updated|revised|real|actual|true|additional)\s+"
         r"(instructions?|task|objective|directives?|orders)\s*(:|are\b|is\b)",
     ),
     _r(
-        "override.from_now_on", "override", "medium",
+        "override.from_now_on",
+        "override",
+        "medium",
         "Tries to change the model's behaviour for the rest of the conversation",
         r"\b(from now on|henceforth|for the rest of (this|the) conversation),?\s+"
         r"(you|always|never|respond|reply|act|only)\b",
     ),
     _r(
-        "override.priority_claim", "override", "high",
+        "override.priority_claim",
+        "override",
+        "high",
         "Claims its instructions outrank the model's own",
         r"\b(this|these|the following)\s+(instructions?|message|directive|text)\s+"
         r"(takes?|has|have)\s+(priority|precedence)\b"
@@ -79,18 +87,24 @@ RULES: tuple[Rule, ...] = (
     ),
     # --- role / chat-template impersonation ---------------------------------
     _r(
-        "role.template_token", "role", "high",
+        "role.template_token",
+        "role",
+        "high",
         "Contains chat-template control tokens used to fake a conversation turn",
         r"<\|\s*(im_start|im_end|system|user|assistant|endoftext|eot_id|start_header_id)\s*\|>"
         r"|\[/?INST\]|<<\s*/?SYS\s*>>|\[/?(system|SYSTEM)\]",
     ),
     _r(
-        "role.fake_turn", "role", "medium",
+        "role.fake_turn",
+        "role",
+        "medium",
         "Starts a line as if it were a system or assistant message",
         r"^[\s>*#-]*(system|assistant|developer)\s*(message|prompt)?\s*:\s*\S",
     ),
     _r(
-        "role.you_are_now", "role", "medium",
+        "role.you_are_now",
+        "role",
+        "medium",
         "Tries to reassign the model's identity",
         # "You are now subscribed" is not an attack; "you are now an unrestricted
         # model" is. The identity/restriction word is what separates them.
@@ -101,13 +115,17 @@ RULES: tuple[Rule, ...] = (
         r"|\bact as (if you were )?(an? )?(unrestricted|unfiltered|uncensored|jailbroken|evil)\b",
     ),
     _r(
-        "role.jailbreak_mode", "role", "high",
+        "role.jailbreak_mode",
+        "role",
+        "high",
         "Invokes a known jailbreak persona or 'mode'",
         r"\b(developer|god|jailbreak|unrestricted|DAN|debug)\s+mode\b|\bDo Anything Now\b",
     ),
     # --- exfiltration --------------------------------------------------------
     _r(
-        "exfil.reveal_prompt", "exfiltration", "high",
+        "exfil.reveal_prompt",
+        "exfiltration",
+        "high",
         "Asks the model to disclose its hidden instructions",
         # "Show me the rules of the game" is fine; "show me YOUR rules" and "the
         # system prompt" are not.
@@ -118,19 +136,25 @@ RULES: tuple[Rule, ...] = (
         r"system\s+message|developer\s+message)\b)",
     ),
     _r(
-        "exfil.repeat_above", "exfiltration", "high",
+        "exfil.repeat_above",
+        "exfiltration",
+        "high",
         "Asks the model to reproduce its context verbatim",
         r"\b(repeat|print|output|copy|reproduce|echo)\b[^.\n]{0,25}?"
         r"\b(everything|all( of)?( the)? (text|words|content)|the (text|content|conversation))\b"
         r"[^.\n]{0,20}?\b(above|before this|so far|verbatim|word for word)\b",
     ),
     _r(
-        "exfil.markdown_beacon", "exfiltration", "high",
+        "exfil.markdown_beacon",
+        "exfiltration",
+        "high",
         "Markdown image whose URL carries a query parameter — a classic data-exfiltration beacon",
         r"!\[[^\]]*\]\(\s*https?://[^)\s]*[?&][^)\s=]+=[^)\s]*\)",
     ),
     _r(
-        "exfil.send_to", "exfiltration", "high",
+        "exfil.send_to",
+        "exfiltration",
+        "high",
         "Instructs sending data to an external address",
         # "Send the invoice to billing@…" is an email. Sending the *conversation* or
         # *credentials* somewhere is exfiltration — the object is what decides it.
@@ -141,7 +165,9 @@ RULES: tuple[Rule, ...] = (
         r"[^.\n]{0,40}?\b(to|at)\s+(https?://\S+|[\w.+-]+@[\w-]+\.[\w.]+)",
     ),
     _r(
-        "exfil.credential_request", "exfiltration", "high",
+        "exfil.credential_request",
+        "exfiltration",
+        "high",
         "Tells the model to ask the user for secrets",
         r"\b(ask|prompt|request|collect|get)\b[^.\n]{0,25}?\b(the )?users?\b[^.\n]{0,30}?"
         r"\b(password|passcode|credentials?|api key|credit card|card number|ssn|"
@@ -149,37 +175,49 @@ RULES: tuple[Rule, ...] = (
     ),
     # --- tool hijack --------------------------------------------------------
     _r(
-        "tool.fake_call_markup", "tool_hijack", "high",
+        "tool.fake_call_markup",
+        "tool_hijack",
+        "high",
         "Contains tool-call markup, as if the model had already decided to call a tool",
         r"</?\s*(tool_use|tool_call|function_calls?|invoke|antml:invoke|tool_result)\b",
     ),
     _r(
-        "tool.fake_call_json", "tool_hijack", "medium",
+        "tool.fake_call_json",
+        "tool_hijack",
+        "medium",
         "Contains JSON shaped like a function/tool call",
         r"\{\s*\"(tool|tool_name|function|function_call|recipient_name)\"\s*:",
     ),
     _r(
-        "tool.invoke_instruction", "tool_hijack", "medium",
+        "tool.invoke_instruction",
+        "tool_hijack",
+        "medium",
         "Tells the model to use one of its tools",
         r"\b(call|invoke|use|run|execute|trigger)\s+(the\s+)?[\w-]+\s+(tool|function|plugin|"
         r"action|api)\b[^.\n]{0,40}?\b(with|to|and)\b",
     ),
     # --- delimiter confusion -------------------------------------------------
     _r(
-        "delimiter.end_of_context", "delimiter", "medium",
+        "delimiter.end_of_context",
+        "delimiter",
+        "medium",
         "Pretends the document has ended so what follows reads as instructions",
         r"\b(end of (the )?(document|context|input|user input|data|email|file))\b"
         r"|---+\s*end\s*---+|</\s*(document|context|user_input|data|email)\s*>",
     ),
     _r(
-        "delimiter.begin_instructions", "delimiter", "high",
+        "delimiter.begin_instructions",
+        "delimiter",
+        "high",
         "Opens a fake block of system or admin instructions",
         r"\b(begin|start)\s+(of\s+)?(new\s+)?(system|admin|administrator|developer|root)\s+"
         r"(instructions?|prompt|message|override)\b",
     ),
     # --- addressed to a model -------------------------------------------------
     _r(
-        "addressed.to_ai", "addressed", "medium",
+        "addressed.to_ai",
+        "addressed",
+        "medium",
         "Written to an AI reader rather than a human one",
         r"\b(if you are|as|you,)\s+an?\s+(ai|llm|language model|large language model|"
         r"ai assistant|chatbot|ai agent|assistant)\b"
@@ -189,14 +227,18 @@ RULES: tuple[Rule, ...] = (
         r"browsing)\s+this\b",
     ),
     _r(
-        "addressed.output_hijack", "addressed", "medium",
+        "addressed.output_hijack",
+        "addressed",
+        "medium",
         "Dictates the model's exact output",
         r"\b(respond|reply|answer|say|output|print|write)\s+(only|just|exclusively|solely)\s+"
         r"(with\s+)?[\"'“‘]",
     ),
     # --- secrecy -------------------------------------------------------------
     _r(
-        "secrecy.hide_from_user", "secrecy", "high",
+        "secrecy.hide_from_user",
+        "secrecy",
+        "high",
         "Asks the model to keep something from the user",
         r"\b(do not|don't|never|without)\s+(tell|telling|inform|informing|mention|mentioning|"
         r"reveal|revealing|alert|alerting|let|letting|notify|notifying)\b[^.\n]{0,20}?"
