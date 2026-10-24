@@ -59,8 +59,22 @@ def _scan(args: argparse.Namespace) -> int:
 def _eval(args: argparse.Namespace) -> int:
     from archibald.evaluate import evaluate, format_report
 
-    print(format_report(evaluate(Path(args.corpus))))
-    return 0
+    report = evaluate(Path(args.corpus))
+    print(format_report(report))
+    # Floors, not targets: a rule change that costs precision or recall below
+    # them fails `make check`, so a regression is a red build and not a number
+    # nobody re-read.
+    failures = [
+        f"{name} {value:.2%} is below the floor of {floor:.2%}"
+        for name, value, floor in (
+            ("precision", report.precision, args.min_precision),
+            ("recall", report.recall, args.min_recall),
+        )
+        if value < floor
+    ]
+    for failure in failures:
+        print(f"archibald: {failure}", file=sys.stderr)
+    return 1 if failures else 0
 
 
 def _serve(args: argparse.Namespace) -> int:
@@ -118,6 +132,20 @@ def main(argv: list[str] | None = None) -> int:
 
     ev = sub.add_parser("eval", help="precision/recall against the labelled corpus")
     ev.add_argument("--corpus", default=str(DEFAULT_CORPUS))
+    ev.add_argument(
+        "--min-precision",
+        type=float,
+        default=0.0,
+        metavar="P",
+        help="exit 1 if precision falls below P (0-1)",
+    )
+    ev.add_argument(
+        "--min-recall",
+        type=float,
+        default=0.0,
+        metavar="R",
+        help="exit 1 if recall falls below R (0-1)",
+    )
     ev.set_defaults(func=_eval)
 
     serve = sub.add_parser("serve", help="run the web UI")
