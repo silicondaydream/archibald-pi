@@ -123,6 +123,12 @@ with invisible text, and a Word report with hidden runs.
 
 ## Docs
 
+**The full documentation is on the Arboria Foundation site:
+<https://arboriafoundation.org/docs/archibald/>** — guides, architecture and
+trust-boundary diagrams, screenshots, a CLI reference and troubleshooting, all
+searchable. The files below are the reference those pages are built from, and
+they stay here so the repository is complete on its own.
+
 | | |
 |---|---|
 | [docs/rules.md](docs/rules.md) | The pipeline, the scoring, and every rule |
