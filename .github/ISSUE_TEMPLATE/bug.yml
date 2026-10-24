@@ -1,0 +1,65 @@
+name: Bug report
+description: Something in Archibald does not behave as documented.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. **If this is a security issue — anything an
+        attacker could trigger — do not file it here.** Use a private advisory:
+        https://github.com/silicondaydream/archibald-pi/security/advisories/new
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: >
+        The smallest input and the exact commands that show it. Paste text, not
+        screenshots of text. Remove anything sensitive — real credentials, real
+        addresses, real people's data.
+      render: console
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Where
+      options:
+        - Text / Markdown
+        - Web page / URL fetch
+        - PDF
+        - DOCX
+        - Images
+        - Rules / scoring
+        - Web UI / API
+        - Docs
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: "v0.1.0, or the output of git rev-parse --short HEAD"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "OS, and the language/runtime version"
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before filing
+      options:
+        - label: I searched existing issues for this.
+          required: true
+        - label: This is not a security vulnerability (those go to a private advisory).
+          required: true
