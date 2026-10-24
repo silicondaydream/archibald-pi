@@ -13,6 +13,8 @@ coloured page backgrounds are not modelled.
 from __future__ import annotations
 
 import io
+from collections.abc import Mapping
+from typing import Any
 
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
@@ -35,7 +37,9 @@ class _HiddenTextTracker:
         self.white = False
         self.runs: list[tuple[str, str]] = []
 
-    def operator(self, op: bytes, args: list, cm: object, tm: object) -> None:  # noqa: ARG002
+    # pypdf passes operands as its own number/name objects, untyped; the try
+    # block below is what handles one that is not the expected shape.
+    def operator(self, op: bytes, args: list[Any], cm: object, tm: object) -> None:  # noqa: ARG002
         try:
             if op == b"Tr" and args:
                 self.mode = int(args[0])
@@ -87,7 +91,7 @@ def extract_pdf(data: bytes, name: str = "document.pdf") -> tuple[list[Segment],
                 )
             )
 
-    meta = reader.metadata or {}
+    meta: Mapping[str, object] = reader.metadata or {}
     for key in ("/Title", "/Author", "/Subject", "/Keywords", "/Creator", "/Producer"):
         value = meta.get(key)
         if value:
