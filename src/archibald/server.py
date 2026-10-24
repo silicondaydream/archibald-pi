@@ -31,7 +31,7 @@ from pydantic import BaseModel, Field
 from archibald import __version__
 from archibald.extract import MAX_BYTES
 from archibald.fetch import FetchError
-from archibald.models import Verdict
+from archibald.models import NotScannedError, Verdict
 from archibald.samples import BY_ID, SAMPLES
 from archibald.scan import scan_bytes, scan_string, scan_url
 
@@ -122,6 +122,8 @@ def scan_url_endpoint(body: UrlRequest) -> Verdict:
         return scan_url(body.url.strip())
     except FetchError as exc:
         raise HTTPException(400, str(exc)) from exc
+    except NotScannedError as exc:
+        raise HTTPException(415, str(exc)) from exc
 
 
 @app.post("/api/scan/file", response_model=Verdict)
@@ -131,7 +133,10 @@ def scan_file_endpoint(file: UploadFile = File(...)) -> Verdict:  # noqa: B008 â
         raise HTTPException(413, f"Files over {MAX_BYTES // 1_000_000} MB are not scanned")
     if not data:
         raise HTTPException(400, "The file is empty")
-    return scan_bytes(data, file.filename)
+    try:
+        return scan_bytes(data, file.filename)
+    except NotScannedError as exc:
+        raise HTTPException(415, str(exc)) from exc
 
 
 @app.get("/api/samples")

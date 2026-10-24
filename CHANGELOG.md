@@ -17,6 +17,10 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   page in the operator's browser cannot drive it. `serve --allow-remote` opts out.
 - **Appended image data could hide behind a fake end marker.** Trailing data is
   now found by walking each format's structure (PNG, JPEG, GIF, WebP).
+- **A file that could not be scanned read as clean.** Over 25 MB, a zip other
+  than DOCX, or a corrupt or oversized DOCX produced a verdict with no segments —
+  score 0, level `clean` — so `scan` exited 0 and a pipeline gate passed it. These
+  now raise `NotScannedError`: `scan` exits 2 and the API answers `415`.
 
 ### Fixed
 
