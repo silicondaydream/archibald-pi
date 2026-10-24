@@ -1,0 +1,38 @@
+name: Feature or change
+description: Propose something Archibald should do differently.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please read "Things that will be declined" in CONTRIBUTING.md first. Some
+        features are refused on purpose, for reasons that are the security model
+        rather than an oversight — it saves us both time to know up front.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and what gets in the way? Start from the need, not the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you propose
+    validations:
+      required: true
+  - type: textarea
+    id: risk
+    attributes:
+      label: Security and maintenance cost
+      description: >
+        What new input does this parse, what new output does it produce, and what
+        could an attacker do with either? Does it add a dependency, a network
+        call, or a configuration option?
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before filing
+      options:
+        - label: I read "Things that will be declined" in CONTRIBUTING.md.
+          required: true

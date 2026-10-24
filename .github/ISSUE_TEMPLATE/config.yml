@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability (private)
+    url: https://github.com/silicondaydream/archibald-pi/security/advisories/new
+    about: Anything an attacker could trigger. Please never file these as public issues.
+  - name: Contributing guide
+    url: https://github.com/silicondaydream/archibald-pi/blob/main/CONTRIBUTING.md
+    about: Setup, the rules that are not negotiable, and what will be declined.

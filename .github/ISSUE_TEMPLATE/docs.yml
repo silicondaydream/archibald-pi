@@ -1,0 +1,19 @@
+name: Documentation
+description: Something in the docs is wrong, missing, or unclear.
+labels: ["docs"]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: The file or page, and the section.
+      placeholder: "README.md › Install, or docs/…"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What is wrong or missing
+      description: If the docs say one thing and the tool does another, say which you believe is right.
+    validations:
+      required: true
