@@ -10,7 +10,7 @@ from pathlib import Path
 
 from archibald import __version__
 from archibald.fetch import FetchError
-from archibald.models import Verdict
+from archibald.models import NotScannedError, Verdict
 
 LEVEL_RANK = {"clean": 0, "suspicious": 1, "likely": 2, "injection": 3}
 DEFAULT_CORPUS = Path(__file__).resolve().parents[2] / "corpus"
@@ -43,7 +43,7 @@ def _scan(args: argparse.Namespace) -> int:
                 verdict = scan_string(path.read_text(encoding="utf-8", errors="replace"), args.kind)
             else:
                 verdict = scan_bytes(path.read_bytes(), path.name)
-    except FetchError as exc:
+    except (FetchError, NotScannedError) as exc:
         print(f"archibald: {exc}", file=sys.stderr)
         return 2
     except OSError as exc:
