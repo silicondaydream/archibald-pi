@@ -15,6 +15,7 @@ import io
 import re
 import warnings
 import zlib
+from collections.abc import Mapping
 
 from PIL import ExifTags, Image, UnidentifiedImageError
 
@@ -276,8 +277,9 @@ def extract_image(data: bytes, name: str = "image") -> tuple[list[Segment], list
             except (OSError, ValueError, SyntaxError):
                 exif = Image.Exif()
                 notes.append("EXIF block could not be parsed")
-            info_items = list((img.info or {}).items())
-        ifds = [exif]
+            # Pillow types info keys loosely; the ones read here are strings.
+            info_items = [(str(k), v) for k, v in (img.info or {}).items()]
+        ifds: list[Mapping[int, object]] = [exif]
         try:
             ifds.append(exif.get_ifd(ExifTags.IFD.Exif))
         except (KeyError, AttributeError, OSError):

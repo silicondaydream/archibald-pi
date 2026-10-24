@@ -23,7 +23,20 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = [
+  "pytest>=8",
+  "ruff>=0.6",
+  "mypy>=1.11",
+  "types-PyYAML>=6.0",
+  "pip-audit>=2.7",
+  # starlette's TestClient wants httpx2; with plain httpx it warns on import.
+  "httpx2>=2.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/silicondaydream/archibald-pi"
+Issues = "https://github.com/silicondaydream/archibald-pi/issues"
+Security = "https://github.com/silicondaydream/archibald-pi/security/advisories/new"
 
 [project.scripts]
 archibald = "archibald.cli:main"
@@ -33,6 +46,17 @@ packages = ["src/archibald"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+files = ["src/archibald"]
+
+# bs4, pypdf and defusedxml ship partial or no types for the parts used here.
+[[tool.mypy.overrides]]
+module = ["defusedxml", "defusedxml.*"]
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 100
