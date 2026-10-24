@@ -33,7 +33,7 @@ def _scan(args: argparse.Namespace) -> int:
     target: str = args.target
     try:
         if target.startswith(("http://", "https://")):
-            verdict = scan_url(target)
+            verdict = scan_url(target, any_port=args.any_port)
         elif target == "-":
             verdict = scan_string(sys.stdin.read(), args.kind)
         else:
@@ -103,6 +103,11 @@ def main(argv: list[str] | None = None) -> int:
         choices=list(LEVEL_RANK),
         default="likely",
         help="exit 1 at or above this level (default: likely)",
+    )
+    scan.add_argument(
+        "--any-port",
+        action="store_true",
+        help="allow URLs on ports other than 80 and 443",
     )
     scan.set_defaults(func=_scan)
 

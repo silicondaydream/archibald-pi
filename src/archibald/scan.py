@@ -23,9 +23,9 @@ def scan_bytes(data: bytes, filename: str | None = None) -> Verdict:
     return scan_segments(segments, kind, notes)
 
 
-def scan_url(url: str) -> Verdict:
+def scan_url(url: str, *, any_port: bool = False) -> Verdict:
     """Fetch a public page (see fetch.py for the guard rails) and scan it."""
-    body, content_type, final = fetch(url)
+    body, content_type, final = fetch(url, any_port=any_port)
     name = PurePosixPath(urlsplit(final).path).name or None
     if "html" in content_type and name and "." not in name:
         name = None  # a bare path like /about is a page, not a file name
