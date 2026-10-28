@@ -11,7 +11,7 @@ from archibald.extract.html import extract_html, looks_like_html
 from archibald.extract.image import extract_image
 from archibald.extract.pdf import extract_pdf
 from archibald.extract.text import extract_text
-from archibald.models import Segment
+from archibald.models import NotScannedError, Segment
 
 MAX_BYTES = 25_000_000
 
@@ -51,10 +51,14 @@ def _decode(data: bytes) -> str:
 
 
 def extract_bytes(data: bytes, filename: str | None = None) -> tuple[list[Segment], list[str], str]:
-    """(segments, notes, kind) for an uploaded or fetched file."""
+    """(segments, notes, kind) for an uploaded or fetched file.
+
+    Raises NotScannedError for input that cannot be scanned at all, so the
+    caller can never mistake "nothing was read" for "nothing was found".
+    """
     notes: list[str] = []
     if len(data) > MAX_BYTES:
-        return [], [f"Refused: larger than {MAX_BYTES // 1_000_000} MB"], "unknown"
+        raise NotScannedError(f"Not scanned: larger than {MAX_BYTES // 1_000_000} MB")
     kind = sniff(data, filename)
     label = filename or "input"
     if kind == "pdf":
@@ -66,7 +70,7 @@ def extract_bytes(data: bytes, filename: str | None = None) -> tuple[list[Segmen
     elif kind in ("html", "svg"):
         segs, notes = extract_html(_decode(data), prefix=label if filename else "")
     elif kind == "zip":
-        return [], ["Zip archives other than .docx are not scanned yet"], kind
+        raise NotScannedError("Not scanned: zip archives other than .docx are not opened")
     else:
         segs, notes = extract_text(_decode(data), label)
     return segs, notes, kind
@@ -83,4 +87,4 @@ def extract_string(text: str, kind: str = "auto") -> tuple[list[Segment], list[s
     return segs, notes, kind
 
 
-__all__ = ["extract_bytes", "extract_string", "sniff"]
+__all__ = ["NotScannedError", "extract_bytes", "extract_string", "sniff"]

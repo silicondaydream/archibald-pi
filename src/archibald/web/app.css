@@ -1,34 +1,33 @@
-/* Archibald — dark, quiet, precise. One accent gradient; severity carries colour. */
+/* Archibald — quiet and precise. Every colour is a token from tokens.css. */
 
 :root {
-  --bg: #0a0c10;
-  --surface: #11151c;
-  --surface-2: #161b24;
-  --surface-3: #1c2230;
-  --border: #232a36;
-  --border-strong: #313a4a;
-  --text: #e7eaf0;
-  --dim: #a3adbd;
-  --faint: #6f7a8c;
-  --accent: #8b7cff;
-  --accent-2: #4fd1c5;
-  --gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+  /* Colours come from tokens.css — the Havarti SecOps palette shared with
+     LycheePot and Lincoln. These names are Archibald's, mapped onto it. */
+  --surface: var(--bg-raised);
+  --surface-2: var(--bg-sunken);
+  --surface-3: var(--bg-hover);
+  --dim: var(--text-dim);
+  --faint: var(--text-faint);
+  --accent-2: var(--accent-hover);
+  --gradient: linear-gradient(135deg, var(--accent), var(--accent-hover));
 
-  --clean: #34d399;
-  --suspicious: #fbbf24;
-  --likely: #fb923c;
-  --injection: #f43f5e;
-  --critical: #f43f5e;
-  --high: #fb923c;
-  --medium: #fbbf24;
-  --low: #60a5fa;
-  --info: #94a3b8;
+  /* Verdict levels colour the score and the level word, so each is a token
+     that passes AA as text on --bg-raised in both themes (scripts/
+     check_contrast.py): moss, gold, deep gold, oxblood — getting darker in
+     light mode and brighter in dark, like the ramp. Finding severities are
+     badges instead: --ramp-N fill with --ramp-N-text. */
+  --clean: var(--ok);
+  --suspicious: var(--accent);
+  --likely: var(--ramp-5);
+  --injection: var(--alert);
+  --critical: var(--alert);
+  --high: var(--ramp-4);
+  --medium: var(--ramp-3);
+  --low: var(--ramp-2);
+  --info: var(--text-faint);
 
-  --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
   --radius: 14px;
   --radius-sm: 9px;
-  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -36,14 +35,14 @@ html, body { margin: 0; }
 body {
   min-height: 100vh;
   background:
-    radial-gradient(900px 500px at 85% -10%, rgb(139 124 255 / 10%), transparent 60%),
-    radial-gradient(700px 400px at -10% 110%, rgb(79 209 197 / 7%), transparent 60%),
+    radial-gradient(900px 500px at 85% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%),
+    radial-gradient(700px 400px at -10% 110%, color-mix(in srgb, var(--focus) 7%, transparent), transparent 60%),
     var(--bg);
   color: var(--text);
   font: 400 14px/1.55 var(--sans);
   -webkit-font-smoothing: antialiased;
 }
-::selection { background: rgb(139 124 255 / 35%); }
+::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
 button, input, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 [hidden] { display: none !important; }
@@ -53,7 +52,7 @@ button, input, textarea { font: inherit; color: inherit; }
   display: flex; align-items: center; justify-content: space-between;
   padding: 18px 32px;
   border-bottom: 1px solid var(--border);
-  background: rgb(10 12 16 / 70%);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
   backdrop-filter: blur(10px);
   position: sticky; top: 0; z-index: 5;
 }
@@ -110,7 +109,7 @@ textarea, input[type="url"] {
 }
 textarea { min-height: 240px; resize: vertical; font: 13px/1.55 var(--mono); }
 textarea:focus, input[type="url"]:focus {
-  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgb(139 124 255 / 20%);
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 ::placeholder { color: var(--faint); }
 
@@ -128,12 +127,12 @@ textarea:focus, input[type="url"]:focus {
 .segmented button[aria-checked="true"] { background: var(--surface-3); color: var(--text); }
 
 .primary {
-  border: 0; cursor: pointer; font-weight: 600; color: #0b0d12;
+  border: 0; cursor: pointer; font-weight: 600; color: var(--on-accent);
   background: var(--gradient); padding: 10px 18px; border-radius: 10px;
-  box-shadow: 0 6px 20px -6px rgb(139 124 255 / 60%);
+  box-shadow: 0 6px 20px -6px color-mix(in srgb, var(--accent) 60%, transparent);
   transition: transform 120ms, box-shadow 120ms, opacity 120ms;
 }
-.primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 24px -6px rgb(139 124 255 / 70%); }
+.primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 24px -6px color-mix(in srgb, var(--accent) 70%, transparent); }
 .primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 .primary.busy { opacity: 0.7; cursor: progress; }
 
@@ -150,7 +149,7 @@ textarea:focus, input[type="url"]:focus {
   border: 1.5px dashed var(--border-strong); border-radius: var(--radius-sm);
   background: var(--bg); transition: border-color 120ms, background 120ms;
 }
-.drop:hover, .drop.over { border-color: var(--accent); background: rgb(139 124 255 / 6%); }
+.drop:hover, .drop.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent); }
 .drop input { display: none; }
 .drop-title { font-weight: 600; }
 .drop-sub { color: var(--faint); font-size: 12px; }
@@ -170,7 +169,7 @@ textarea:focus, input[type="url"]:focus {
 .results { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .empty { padding: 40px 36px; color: var(--dim); }
 .empty-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-.error { padding: 18px 20px; border-color: rgb(244 63 94 / 40%); color: #fecdd3; }
+.error { padding: 18px 20px; border-color: color-mix(in srgb, var(--alert) 40%, transparent); color: var(--alert); }
 
 .verdict { display: grid; grid-template-columns: auto 1fr; gap: 24px; padding: 24px; align-items: center; }
 .ring { width: 116px; height: 116px; position: relative; }
@@ -211,15 +210,15 @@ textarea:focus, input[type="url"]:focus {
   font: 600 10.5px/1 var(--sans); letter-spacing: 0.06em; text-transform: uppercase;
   padding: 5px 8px; border-radius: 6px; border: 1px solid currentColor;
 }
-.sev-critical { color: var(--critical); background: rgb(244 63 94 / 12%); }
-.sev-high { color: var(--high); background: rgb(251 146 60 / 12%); }
-.sev-medium { color: var(--medium); background: rgb(251 191 36 / 10%); }
-.sev-low { color: var(--low); background: rgb(96 165 250 / 10%); }
-.sev-info { color: var(--info); background: rgb(148 163 184 / 10%); }
+.sev-critical { color: var(--on-accent); background: var(--alert); }
+.sev-high { color: var(--ramp-4-text); background: var(--ramp-4); }
+.sev-medium { color: var(--ramp-3-text); background: var(--ramp-3); }
+.sev-low { color: var(--ramp-2-text); background: var(--ramp-2); }
+.sev-info { color: var(--ramp-1-text); background: var(--ramp-1); }
 .rule { font: 12px var(--mono); color: var(--dim); }
 .badge {
-  font-size: 11.5px; color: #c4b5fd; background: rgb(139 124 255 / 14%);
-  border: 1px solid rgb(139 124 255 / 35%); border-radius: 6px; padding: 3px 7px;
+  font-size: 11.5px; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 6px; padding: 3px 7px;
 }
 .message { margin: 0 0 8px; }
 .where { font: 12px var(--mono); color: var(--faint); margin-bottom: 8px; word-break: break-word; }
@@ -229,8 +228,8 @@ textarea:focus, input[type="url"]:focus {
   padding: 10px 12px; white-space: pre-wrap; word-break: break-word; margin: 0;
 }
 .evidence mark {
-  background: rgb(244 63 94 / 18%); color: #ffe4e6; border-radius: 3px;
-  padding: 0 2px; box-shadow: inset 0 -1px 0 rgb(244 63 94 / 60%);
+  background: color-mix(in srgb, var(--alert) 18%, transparent); color: var(--text); border-radius: 3px;
+  padding: 0 2px; box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--alert) 60%, transparent);
 }
 .decoded { font-size: 12px; color: var(--accent-2); margin-top: 6px; }
 

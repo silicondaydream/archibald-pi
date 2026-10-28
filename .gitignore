@@ -7,4 +7,6 @@ dist/
 build/
 .DS_Store
 CLAUDE.md
-AGENTS.md
+AGENTS.md.mypy_cache/
+.coverage
+htmlcov/

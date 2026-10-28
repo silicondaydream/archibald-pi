@@ -17,6 +17,15 @@ Level = Literal["clean", "suspicious", "likely", "injection"]
 SEVERITY_ORDER: tuple[Severity, ...] = ("info", "low", "medium", "high", "critical")
 
 
+class NotScannedError(Exception):
+    """The input was refused whole: too large, corrupt, or a format not opened.
+
+    Raised, never returned as a note: a verdict built from no segments scores 0
+    and reads as clean, and a gate would wave through exactly the file an
+    attacker padded past the limit or wrapped in an archive.
+    """
+
+
 def bump(severity: Severity, steps: int = 1) -> Severity:
     """Move a severity up (or down, with a negative step), clamped to the scale."""
     i = SEVERITY_ORDER.index(severity) + steps

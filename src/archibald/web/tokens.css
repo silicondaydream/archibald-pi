@@ -1,0 +1,143 @@
+/* Havarti SecOps design tokens — the same file as LycheePot's
+ * apps/web/src/styles/tokens.css and Lincoln's ui/src/tokens.css, so the
+ * toolchain reads as one family. Change the palette there and copy it here.
+ *
+ * Yellow, gold, brown, muted earth. Two things in here are not obvious and are
+ * worth reading before changing anything.
+ *
+ * 1. THE RAMP REVERSES IN DARK MODE. In light, "more" is darker; in dark, "more"
+ *    is brighter. Both directions increase contrast against their own
+ *    background, so intensity reads as intensity in either theme. A ramp copied
+ *    unchanged from light to dark would make the loudest attacker the hardest
+ *    row to see.
+ *
+ * 2. --focus IS DELIBERATELY NOT IN THE PALETTE. A desaturated teal is the one
+ *    colour here that is not earth-toned. Focus and selection must never be
+ *    confusable with severity, and every hue inside a yellow-gold-brown ramp IS
+ *    a severity value. Reserving one out-of-family colour for focus rings is the
+ *    honest fix; smuggling focus into the amber range would make the interface
+ *    lie about what it is showing.
+ *
+ * No hex literal belongs anywhere else in web/. The palette is changed here
+ * and nowhere else.
+ *
+ * Every pairing here is measured, not estimated, and meets WCAG AA (4.5:1) for
+ * normal text. scripts/check_contrast.py measures them.
+ */
+
+:root,
+[data-theme="light"] {
+  /* Surfaces — warm paper, not grey */
+  --bg: #fdfbf6;
+  --bg-raised: #f7f1e3;
+  --bg-sunken: #f2eada;
+  --bg-hover: #efe6d2;
+  --border: #ded1b4;
+  --border-strong: #c4b18a;
+
+  /* Text — bark */
+  --text: #2a1f14;          /* 15.57:1 on --bg  AAA */
+  --text-dim: #6b5637;      /* 6.74:1 on --bg   AA  */
+  --text-faint: #7e6a49;    /* 5.02:1 on --bg, 4.61:1 on --bg-raised */
+  --accent: #8a5a16;        /* 5.71:1 on --bg   AA  */
+  --accent-hover: #6e4611;
+  --on-accent: #fdfbf6;
+
+  /* Sequential intensity ramp — monotonic in luminance, so it survives
+     greyscale and every form of colour vision deficiency. */
+  --ramp-1: #f6e7be;
+  --ramp-2: #e8c878;
+  --ramp-3: #d1a03c;
+  --ramp-4: #9b6b19;
+  --ramp-5: #6e4611;
+  --ramp-1-text: #2a1f14;
+  --ramp-2-text: #2a1f14;
+  --ramp-3-text: #2a1f14;
+  --ramp-4-text: #fdfbf6;
+  --ramp-5-text: #fdfbf6;
+
+  /* Secondary cues. Never the only signal for anything. */
+  --alert: #8c2f16;   /* oxblood; CRITICAL fill, always with glyph + label */
+  --ok: #4f6b2e;      /* moss; sensor health, always with glyph + word */
+  --focus: #2e6b7a;   /* the deliberate exception — see header */
+
+  --grid: #e2d6bc;
+  --shadow: 0 1px 2px rgb(42 31 20 / 8%), 0 2px 8px rgb(42 31 20 / 6%);
+}
+
+[data-theme="dark"] {
+  --bg: #16120c;
+  --bg-raised: #1f1a11;
+  --bg-sunken: #100d08;
+  --bg-hover: #2a2317;
+  --border: #3c3221;
+  --border-strong: #574728;
+
+  --text: #f2e9d8;
+  --text-dim: #b39d74;
+  --text-faint: #9a845b;
+  --accent: #e0a84b;
+  --accent-hover: #f0be69;
+  --on-accent: #16120c;
+
+  /* Reversed: dim -> bright is "more". See the header note. */
+  --ramp-1: #3a2e16;
+  --ramp-2: #6b4e15;
+  --ramp-3: #a5761d;
+  --ramp-4: #d8a63c;
+  --ramp-5: #f6d888;
+  --ramp-1-text: #f2e9d8;
+  --ramp-2-text: #f2e9d8;
+  --ramp-3-text: #16120c;
+  --ramp-4-text: #16120c;
+  --ramp-5-text: #16120c;
+
+  --alert: #e07a55;
+  --ok: #9cb06a;
+  --focus: #6fb3c4;
+
+  --grid: #3d3422;
+  --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 2px 8px rgb(0 0 0 / 30%);
+}
+
+/* Respect the OS when the operator has expressed no preference of their own. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16120c;
+    --bg-raised: #1f1a11;
+    --bg-sunken: #100d08;
+    --bg-hover: #2a2317;
+    --border: #3c3221;
+    --border-strong: #574728;
+    --text: #f2e9d8;
+    --text-dim: #b39d74;
+    --text-faint: #9a845b;
+    --accent: #e0a84b;
+    --accent-hover: #f0be69;
+    --on-accent: #16120c;
+    --ramp-1: #3a2e16;
+    --ramp-2: #6b4e15;
+    --ramp-3: #a5761d;
+    --ramp-4: #d8a63c;
+    --ramp-5: #f6d888;
+    --ramp-1-text: #f2e9d8;
+    --ramp-2-text: #f2e9d8;
+    --ramp-3-text: #16120c;
+    --ramp-4-text: #16120c;
+    --ramp-5-text: #16120c;
+    --alert: #e07a55;
+    --ok: #9cb06a;
+    --focus: #6fb3c4;
+    --grid: #3d3422;
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 2px 8px rgb(0 0 0 / 30%);
+  }
+}
+
+:root {
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --row-h: 28px;
+  --radius: 6px;
+  --gap: 16px;
+  color-scheme: light dark;
+}

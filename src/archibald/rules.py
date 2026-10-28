@@ -245,10 +245,3 @@ RULES: tuple[Rule, ...] = (
         r"\b(the\s+)?(user|human|operator|reader|them)\b",
     ),
 )
-
-
-def rule_by_id(rule_id: str) -> Rule:
-    for rule in RULES:
-        if rule.id == rule_id:
-            return rule
-    raise KeyError(rule_id)
