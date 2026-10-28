@@ -17,7 +17,7 @@ from xml.etree.ElementTree import Element  # the type only; parsing is defusedxm
 
 from defusedxml import ElementTree
 
-from archibald.models import Segment
+from archibald.models import NotScannedError, Segment
 
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 MAX_UNCOMPRESSED = 60_000_000
@@ -57,10 +57,10 @@ def extract_docx(data: bytes, name: str = "document.docx") -> tuple[list[Segment
     try:
         zf = zipfile.ZipFile(io.BytesIO(data))
     except zipfile.BadZipFile:
-        return [], ["Not a valid .docx (zip) file"]
+        raise NotScannedError("Not scanned: not a valid .docx (zip) file") from None
     infos = zf.infolist()
     if len(infos) > MAX_MEMBERS or sum(i.file_size for i in infos) > MAX_UNCOMPRESSED:
-        return [], ["Refused: the archive expands to more than the size limit"]
+        raise NotScannedError("Not scanned: the archive expands past the size limit")
     names = set(zf.namelist())
 
     parts = dict(PARTS)

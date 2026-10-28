@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import argparse
 import ipaddress
+import os
 import sys
 from pathlib import Path
 
 from archibald import __version__
 from archibald.fetch import FetchError
-from archibald.models import Verdict
+from archibald.models import NotScannedError, Verdict
 
 LEVEL_RANK = {"clean": 0, "suspicious": 1, "likely": 2, "injection": 3}
 DEFAULT_CORPUS = Path(__file__).resolve().parents[2] / "corpus"
@@ -33,7 +34,7 @@ def _scan(args: argparse.Namespace) -> int:
     target: str = args.target
     try:
         if target.startswith(("http://", "https://")):
-            verdict = scan_url(target)
+            verdict = scan_url(target, any_port=args.any_port)
         elif target == "-":
             verdict = scan_string(sys.stdin.read(), args.kind)
         else:
@@ -42,7 +43,7 @@ def _scan(args: argparse.Namespace) -> int:
                 verdict = scan_string(path.read_text(encoding="utf-8", errors="replace"), args.kind)
             else:
                 verdict = scan_bytes(path.read_bytes(), path.name)
-    except FetchError as exc:
+    except (FetchError, NotScannedError) as exc:
         print(f"archibald: {exc}", file=sys.stderr)
         return 2
     except OSError as exc:
@@ -58,8 +59,22 @@ def _scan(args: argparse.Namespace) -> int:
 def _eval(args: argparse.Namespace) -> int:
     from archibald.evaluate import evaluate, format_report
 
-    print(format_report(evaluate(Path(args.corpus))))
-    return 0
+    report = evaluate(Path(args.corpus))
+    print(format_report(report))
+    # Floors, not targets: a rule change that costs precision or recall below
+    # them fails `make check`, so a regression is a red build and not a number
+    # nobody re-read.
+    failures = [
+        f"{name} {value:.2%} is below the floor of {floor:.2%}"
+        for name, value, floor in (
+            ("precision", report.precision, args.min_precision),
+            ("recall", report.recall, args.min_recall),
+        )
+        if value < floor
+    ]
+    for failure in failures:
+        print(f"archibald: {failure}", file=sys.stderr)
+    return 1 if failures else 0
 
 
 def _serve(args: argparse.Namespace) -> int:
@@ -79,6 +94,10 @@ def _serve(args: argparse.Namespace) -> int:
         )
         if not args.allow_remote:
             return 2
+    if args.allow_remote:
+        # Read by the app's own guard (server.py), which otherwise refuses any
+        # peer or Host header that is not loopback.
+        os.environ["ARCHIBALD_ALLOW_REMOTE"] = "1"
     print(f"Archibald {__version__} — http://{host}:{args.port}")
     uvicorn.run("archibald.server:app", host=host, port=args.port, log_level="warning")
     return 0
@@ -104,10 +123,29 @@ def main(argv: list[str] | None = None) -> int:
         default="likely",
         help="exit 1 at or above this level (default: likely)",
     )
+    scan.add_argument(
+        "--any-port",
+        action="store_true",
+        help="allow URLs on ports other than 80 and 443",
+    )
     scan.set_defaults(func=_scan)
 
     ev = sub.add_parser("eval", help="precision/recall against the labelled corpus")
     ev.add_argument("--corpus", default=str(DEFAULT_CORPUS))
+    ev.add_argument(
+        "--min-precision",
+        type=float,
+        default=0.0,
+        metavar="P",
+        help="exit 1 if precision falls below P (0-1)",
+    )
+    ev.add_argument(
+        "--min-recall",
+        type=float,
+        default=0.0,
+        metavar="R",
+        help="exit 1 if recall falls below R (0-1)",
+    )
     ev.set_defaults(func=_eval)
 
     serve = sub.add_parser("serve", help="run the web UI")

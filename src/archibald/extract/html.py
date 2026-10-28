@@ -27,8 +27,8 @@ import re
 from dataclasses import dataclass
 from urllib.parse import unquote
 
-from bs4 import BeautifulSoup, CData, Comment, Doctype, NavigableString, Tag
-from bs4.element import Declaration, ProcessingInstruction
+from bs4 import BeautifulSoup, CData, Comment, Doctype, Tag
+from bs4.element import Declaration, NavigableString, ProcessingInstruction
 
 from archibald.extract.css import (
     HIDING_CLASSES,
@@ -122,7 +122,7 @@ def describe(tag: Tag) -> str:
             label += f"#{t['id']}"
         elif t.get("name") and t.name in ("input", "textarea", "select", "button", "form"):
             label += f"[name={t['name']}]"
-        classes = t.get("class") or []
+        classes: list[str] = list(t.get_attribute_list("class") or [])
         if classes and not t.get("id"):
             label += "." + ".".join(classes[:2])
         return label
