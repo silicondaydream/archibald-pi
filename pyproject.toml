@@ -27,7 +27,7 @@ dev = [
   "pytest>=8",
   "ruff>=0.6",
   "mypy>=1.11",
-  "types-PyYAML>=6.0",
+  "types-PyYAML>=6.0.12.20261113",
   "pip-audit>=2.7",
   # starlette's TestClient wants httpx2; with plain httpx it warns on import.
   "httpx2>=2.12",
